@@ -1,9 +1,12 @@
-import struct
 import datetime
 from collections import namedtuple
 
-from rdbtools3 import consts as C
-from rdbtools3.exceptions import FileFormatError
+from . import consts as C
+from .exceptions import FileFormatError
+from .util import read_byte, read_int, skip_bytes, unpack
+from .intset import unpack_intset
+from .ziplist import unpack_ziplist
+from .zipmap import unpack_zipmap
 
 
 RDBItem = namedtuple('RDBItem', 'dbnum key_type key value expire info')
@@ -111,17 +114,16 @@ def read_string(f):
 
 
 def read_skip_string(f):
+    """
+    read string's length and skip that number of bytes;
+
+    Note: for compressed strings length is a tuple of
+          compressed & uncompressed lengths
+    """
     str_enc_type, len_ = read_string_length(f)
     if str_enc_type == C.STR_COMPRESSED:
         len_, explen = len_
     skip_bytes(f, len_)
-    #if str_enc_type == C.STR_RAW:
-    #    skip_bytes(f, len_)
-    #elif str_enc_type == C.STR_INTEGER:
-    #    skip_bytes(f, len_)
-    #elif str_enc_type == C.STR_COMPRESSED:
-    #    clen, explen = len_
-    #    skip_bytes(f, clen)
 
 read_key = read_string
 read_skip_key = read_skip_string
@@ -157,11 +159,11 @@ def read_value(ctl_code, f):
             ret.append((field, value))
         return ret
     elif ctl_code == C.VALUE_ENC_ZIPMAP:
-        return read_string(f)
+        return unpack_zipmap(read_string(f))
     elif ctl_code == C.VALUE_ENC_ZIPLIST:
-        return read_string(f)
+        return unpack_ziplist(read_string(f))
     elif ctl_code == C.VALUE_ENC_INTSET:
-        return read_string(f)
+        return unpack_intset(read_string(f))
     elif ctl_code == C.VALUE_ENC_ZSET_IN_ZIPLIST:
         return read_string(f)
     elif ctl_code == C.VALUE_ENC_HASH_IN_ZIPLIST:
@@ -198,26 +200,6 @@ def read_skip_value(ctl_code, f):
         read_skip_string(f)
 
 
-### few util functions ###
-
-
-def read_byte(f):
-    return ord(f.read(1))
-
-
-def skip_bytes(f, num):
-    f.seek(num, 1)
-
-
-def unpack(spec, bytes_):
-    return struct.unpack(spec, bytes_)[0]
-
-
-def read_int(f, size, _specs={1: 'b', 2: 'h', 4: 'i'}):
-    spec = _specs[size]
-    return unpack(spec, f.read(size))
-
-
 def read_length(f):
     byte = read_byte(f)
     enc_type = byte >> 6
@@ -231,6 +213,7 @@ def read_length(f):
         val = unpack('>I', f.read(4))
         return val
     # else: LEN_ENC_SPECIAL
+    # in docs this bytes read as signed integers;
     elif val == C.LEN_ENC_SPECIAL_8BIT:
         return read_byte(f)
     elif val == C.LEN_ENC_SPECIAL_16BIT:
@@ -269,6 +252,7 @@ def read_string_length(f):
         return C.STR_INTEGER, 2
     elif val == C.LEN_ENC_SPECIAL_32BIT:
         return C.STR_INTEGER, 4
+    # lzf encoded string
     elif val == C.LEN_ENC_SPECIAL_LZF:
         clen = read_length(f)
         explen = read_length(f)
