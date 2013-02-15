@@ -10,4 +10,8 @@ class RdbParser:
     def parse(self, dumpfile):
         with open(dumpfile, 'rb') as f:
             for rdbkey in parse_rdb_stream(f):
-                pass
+                print(rdbkey)
+
+
+class RdbCallback:
+    pass
