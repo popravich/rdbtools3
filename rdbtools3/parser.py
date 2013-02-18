@@ -3,7 +3,7 @@ from collections import namedtuple
 
 from . import consts as C
 from .exceptions import FileFormatError
-from .util import read_byte, read_int, skip_bytes, unpack
+from .util import read_byte, read_int, skip_bytes, unpack, unpack_pairs
 from .intset import unpack_intset
 from .ziplist import unpack_ziplist
 from .zipmap import unpack_zipmap
@@ -133,41 +133,26 @@ def read_value(ctl_code, f):
     if ctl_code == C.VALUE_ENC_STRING:
         return read_string(f)
     elif ctl_code == C.VALUE_ENC_LIST:
-        lsize = read_length(f)
-        return [read_string(f)
-                for _ in range(lsize)]
+        return list(unpack_list(f))
     elif ctl_code == C.VALUE_ENC_SET:
-        ssize = read_length(f)
         # TODO: set values are ordered
-        return {read_string(f)
-                for _ in range(ssize)}
+        # returning list instead of set to keep order
+        return list(unpack_set(f))
     elif ctl_code == C.VALUE_ENC_SORTET_SET:
-        zs_size = read_length(f)
-        ret = []
-        for _ in range(zs_size):
-            val = read_string(f)
-            len_ = read_byte(f)
-            score = f.read(len_)
-            ret.append((val, score))
-        return ret
+        return list(unpack_zset(f))
     elif ctl_code == C.VALUE_ENC_HASH:
-        hsize = read_length(f)
-        ret = []
-        for _ in range(hsize):
-            field = read_string(f)
-            value = read_string(f)
-            ret.append((field, value))
-        return ret
+        return list(unpack_hash(f))
     elif ctl_code == C.VALUE_ENC_ZIPMAP:
-        return unpack_zipmap(read_string(f))
+        return list(unpack_zipmap(read_string(f)))
     elif ctl_code == C.VALUE_ENC_ZIPLIST:
-        return unpack_ziplist(read_string(f))
+        return list(unpack_ziplist(read_string(f)))
     elif ctl_code == C.VALUE_ENC_INTSET:
-        return unpack_intset(read_string(f))
+        # returning list instead of set to keep order
+        return list(unpack_intset(read_string(f)))
     elif ctl_code == C.VALUE_ENC_ZSET_IN_ZIPLIST:
-        return read_string(f)
+        return list(unpack_pairs(unpack_ziplist(read_string(f))))
     elif ctl_code == C.VALUE_ENC_HASH_IN_ZIPLIST:
-        return read_string(f)
+        return list(unpack_pairs(unpack_ziplist(read_string(f))))
     raise NotImplementedError("Got unknown data type {}".format(hex(ctl_code)))
 
 
@@ -259,3 +244,29 @@ def read_string_length(f):
         return C.STR_COMPRESSED, (clen, explen)
     raise NotImplementedError('Got unknown length encoding type {}'
                               .format(hex(byte)))
+
+
+def unpack_list(f):
+    lsize = read_length(f)
+    for _ in range(lsize):
+        yield read_string(f)
+
+unpack_set = unpack_list
+
+
+def unpack_zset(f):
+    zs_size = read_length(f)
+    for _ in range(zs_size):
+        val = read_string(f)
+        len_ = read_byte(f)
+        score = f.read(len_)
+        # TODO: convert score to int/float
+        yield val, score
+
+
+def unpack_hash(f):
+    hsize = read_length(f)
+    for _ in range(hsize):
+        field = read_string(f)
+        value = read_string(f)
+        yield field, value

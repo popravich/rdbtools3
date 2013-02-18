@@ -20,14 +20,12 @@ def unpack_ziplist(bytes_):
     s = BytesIO(bytes_)
     zlsize = read_uint(s, 4)
     tail_offset = read_uint(s, 4)
-    num_entries = read_byte(s)
-    ret = []
+    num_entries = read_uint(s, 2)
     for _ in range(num_entries):
-        ret.append(unpack_ziplist_entry(s))
+        yield unpack_ziplist_entry(s)
     zend = read_byte(s)
     if zend != 255:
-        raise ValueError("Invalid ziplist end")
-    return ret
+        raise ValueError("Invalid ziplist end {}".format(hex(zend)))
 
 
 def unpack_ziplist_entry(s):

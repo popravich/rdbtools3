@@ -11,4 +11,5 @@ def unpack_intset(bytes_):
     if len(bytes_) - 8 != len_ * int_size:
         raise ValueError("Bad content size {} (expected {})"
                          .format(len(bytes_) - 8, len_ * int_size))
-    return {read_uint(s, int_size) for _ in range(len_)}
+    for _ in range(len_):
+        yield read_uint(s, int_size)

@@ -10,7 +10,6 @@ def unpack_zipmap(bytes_):
         num_entries = zmlen
     else:
         num_entries = None
-    ret = []
     while True:
         key_len = read_next_len(s)
         if key_len is None:
@@ -22,11 +21,11 @@ def unpack_zipmap(bytes_):
         free = read_byte(s)
         value = s.read(val_len)
         skip_bytes(s, free)
-        ret.append((key, value))
+        yield key, value
     # TODO: maybe just skip this check?
-    if num_entries is not None and num_entries != len(ret):
-        raise ValueError("Invalid number of entries in zipmap")
-    return ret
+    #if num_entries is not None and num_entries != len(ret):
+    #    raise ValueError("Invalid number of entries in zipmap")
+    #return ret
 
 
 def read_next_len(s):

@@ -29,3 +29,11 @@ def read_int(f, size):
 def read_uint(f, size):
     spec = _SIZE_2_SPEC[size]
     return struct.unpack(spec.upper(), f.read(size))[0]
+
+
+def unpack_pairs(iterable):
+    it = iter(iterable)
+    while True:
+        a = next(it)
+        b = next(it)
+        yield a, b
