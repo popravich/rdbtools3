@@ -7,6 +7,7 @@ from .util import read_byte, read_int, skip_bytes, unpack, unpack_pairs
 from .intset import unpack_intset
 from .ziplist import unpack_ziplist
 from .zipmap import unpack_zipmap
+from .lzf import unpack_lzf
 
 
 RDBItem = namedtuple('RDBItem', 'dbnum key_type key value expire info')
@@ -108,7 +109,7 @@ def read_string(f):
         return read_int(f, len_)
     elif str_enc_type == C.STR_COMPRESSED:
         clen, explen = len_
-        return f.read(clen)
+        return unpack_lzf(f, clen, explen)
     raise NotImplementedError('Got unknown string encoding type {}'
                               .format(hex(str_enc_type)))
 
