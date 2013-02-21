@@ -1,9 +1,14 @@
 import argparse
 import sys
+import re
 from collections import defaultdict
 
 from rdbtools3.parser import read_signature, read_version, parse_rdb_stream
 from rdbtools3.exceptions import FileFormatError
+from rdbtools3.consts import TYPE_NAMES
+
+
+TYPES = sorted(set(TYPE_NAMES.values()))
 
 
 def get_options():
@@ -22,21 +27,20 @@ def get_options():
             action="append", type=int)
     gr.add_argument('-D', '--exclude-db', metavar="N",
             help="exclude DB number",
-            dest="exlude_dbs", default=None,
+            dest="exclude_dbs", default=None,
             action="append", type=int)
     # type filtering
-    types = ['str', 'list', 'set', 'hash', 'zset']
     gr = ap.add_mutually_exclusive_group()
     gr.add_argument('-k', '--include-type', metavar="TYPE",
             help="include key type in result"
                  " (choices are: %(choices)s)",
             dest="include_types", default=None,
-            action="append", choices=types)
+            action="append", choices=TYPES)
     gr.add_argument('-K', '--exclude-type', metavar="TYPE",
             help="exclude key type in result"
                  " (choices are: %(choices)s)",
             dest="exclude_types", default=None,
-            action="append", choices=types)
+            action="append", choices=TYPES)
     # keys filtering
     gr = ap.add_mutually_exclusive_group()
     gr.add_argument('-e', '--include-regex', metavar="REGEX",
@@ -49,6 +53,11 @@ def get_options():
     ap.add_argument('-i', '--info',
             help="Show dump info and exit",
             dest="show_info_only", default=False, action="store_true")
+
+    ap.add_argument('--format', metavar="STRING",
+            help="Use alternative line format when printing keys;"
+                 " (default `%(default)s`)",
+            dest="line_format", default=None)
     return ap
 
 
@@ -86,10 +95,64 @@ def print_info(options):
             sys.stdout.write('  {:<10}: {}\n'.format(key, count))
 
 
+def skip_db(options):
+    incl = set(options.include_dbs or [])
+    excl = set(options.exclude_dbs or [])
+
+    def inner(dbnum):
+        if incl:
+            return dbnum not in incl
+        elif excl:
+            return dbnum in excl
+        return False
+    return inner
+
+
+def skip_key_type(options):
+    incl = set(options.include_types or [])
+    excl = set(options.exclude_types or [])
+
+    def inner(dbnum, key_type):
+        if incl:
+            return key_type not in incl
+        elif excl:
+            return key_type in excl
+        return False
+    return inner
+
+
+def skip_key(options):
+    incl_re = excl_re = None
+    if options.include_key:
+        incl_re = re.compile(options.include_key)
+    elif options.exclude_key:
+        excl_re = re.compile(options.exclude_key)
+
+    def inner(dbnum, key_type, key):
+        if incl_re or excl_re:
+            if isinstance(key, bytes):
+                key = key.decode('utf-8')
+            if not isinstance(key, str):
+                key = str(key)
+            if incl_re:
+                return incl_re.match(key) is None
+            if excl_re:
+                return excl_re.match(key) is not None
+        return False
+    return inner
+
+
 def print_keys(options):
-    for item in parse_rdb_stream(options.dumpfile):
-        sys.stdout.write('db: {item.dbnum}; type: {item.key_type};'
-                         ' key: {item.key}'.format(item=item))
+    fmt = 'db: {item.dbnum}; type: {item.key_type}; key: {item.key}'
+    if options.line_format:
+        fmt = options.line_format
+    parser = parse_rdb_stream(options.dumpfile,
+                              skip_db=skip_db(options),
+                              skip_key_type=skip_key_type(options),
+                              skip_key=skip_key(options),
+                              )
+    for item in parser:
+        sys.stdout.write(fmt.format(item=item))
         sys.stdout.write('\n')
 
 
