@@ -87,7 +87,10 @@ def print_info(options):
 
 
 def print_keys(options):
-    pass
+    for item in parse_rdb_stream(options.dumpfile):
+        sys.stdout.write('db: {item.dbnum}; type: {item.key_type};'
+                         ' key: {item.key}'.format(item=item))
+        sys.stdout.write('\n')
 
 
 def main():

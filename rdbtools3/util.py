@@ -33,7 +33,4 @@ def read_uint(f, size):
 
 def unpack_pairs(iterable):
     it = iter(iterable)
-    while True:
-        a = next(it)
-        b = next(it)
-        yield a, b
+    return zip(it, it)
