@@ -28,19 +28,12 @@ def parse_rdb_stream(f, skip_db=lambda dbnum: False,
     _skip_db = _skip_key_type = _skip_key = False
 
     # read signature and version
-    bsign = f.read(5)
-    if bsign != C.MAGIC_STRING:
-        raise FileFormatError('Invalid file format')
-    bversion = f.read(4)
-    try:
-        version = int(bversion)
-    except ValueError:
-        raise FileFormatError('Invalid RDB version number')
-    if version < 1:
-        raise FileFormatError('Invalid RDB version number')
-    elif version > 6:
+    read_signature(f)
+    version = read_version(f)
+    if version > 6:
         raise NotImplementedError("Version {} is not supported"
                                   .format(version))
+
     while True:
         try:
             ctl_code = read_byte(f)
@@ -78,7 +71,25 @@ def parse_rdb_stream(f, skip_db=lambda dbnum: False,
             continue
 
         value = read_value(ctl_code, f)
+        # TODO: fill info dict (rdb version, encoding, etc)
         yield RDBItem(dbnum, key_type, key, value, expire, {})
+
+
+def read_signature(f):
+    bsign = f.read(5)
+    if bsign != C.MAGIC_STRING:
+        raise FileFormatError('Invalid file format')
+
+
+def read_version(f):
+    bversion = f.read(4)
+    try:
+        version = int(bversion)
+    except ValueError:
+        raise FileFormatError('Invalid RDB version number')
+    if version < 1:
+        raise FileFormatError('Invalid RDB version number')
+    return version
 
 
 def read_expire(ctl_code, f):
@@ -116,7 +127,7 @@ def read_string(f):
 
 def read_skip_string(f):
     """
-    read string's length and skip that number of bytes;
+    read string length and skip that number of bytes;
 
     Note: for compressed strings length is a tuple of
           compressed & uncompressed lengths
