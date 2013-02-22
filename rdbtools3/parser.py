@@ -71,8 +71,9 @@ def parse_rdb_stream(f, skip_db=lambda dbnum: False,
             continue
 
         value = read_value(ctl_code, f)
+        info = {'encoding': C.ENC_NAMES[ctl_code]}
         # TODO: fill info dict (rdb version, encoding, etc)
-        yield RDBItem(dbnum, key_type, key, value, expire, {})
+        yield RDBItem(dbnum, key_type, key, value, expire, info)
 
 
 def read_signature(f):
@@ -182,8 +183,7 @@ def read_skip_value(ctl_code, f):
             skip_bytes(f, read_byte(f))
     elif ctl_code == C.VALUE_ENC_HASH:
         hsize = read_length(f)
-        for _ in range(hsize):
-            read_skip_string(f)
+        for _ in range(hsize * 2):
             read_skip_string(f)
     elif ctl_code == C.VALUE_ENC_ZIPMAP:
         read_skip_string(f)

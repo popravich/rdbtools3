@@ -61,3 +61,16 @@ TYPE_NAMES = {
     VALUE_ENC_ZSET_IN_ZIPLIST: 'zset',
     VALUE_ENC_HASH_IN_ZIPLIST: 'hash',
 }
+
+ENC_NAMES = {
+    VALUE_ENC_STRING: 'raw',
+    VALUE_ENC_LIST: 'list',
+    VALUE_ENC_SET: 'set',
+    VALUE_ENC_SORTET_SET: 'zset',
+    VALUE_ENC_HASH: 'hash',
+    VALUE_ENC_ZIPMAP: 'zipmap',
+    VALUE_ENC_ZIPLIST: 'ziplist',
+    VALUE_ENC_INTSET: 'intset',
+    VALUE_ENC_ZSET_IN_ZIPLIST: 'ziplist',
+    VALUE_ENC_HASH_IN_ZIPLIST: 'ziplist',
+}
