@@ -42,18 +42,19 @@ class TestIntset(unittest.TestCase):
                b'\x01\x00\x00\x00'
                b'\x01\x00'
                b'\x02\x00\x00')
-        with self.assertRaisesRegex(RDBValueError,
-                "Bad content size 5 \(expected 2\)"):
+        test = getattr(self, 'assertRaisesRegex',
+                       getattr(self, 'assertRaisesRegexp'))
+        with test(RDBValueError, "Bad content size 5 \(expected 2\)"):
             list(unpack_intset(val))
 
     def test_bad_size_encoding(self):
         val = (b'\x03\x00\x00\x00'
                b'\x01\x00\x00\x00'
                b'\x00\x00\x00')
-        with self.assertRaisesRegex(RDBValueError,
-                "Unexpected size encoding 0x3"):
+        test = getattr(self, 'assertRaisesRegex',
+                       getattr(self, 'assertRaisesRegexp'))
+        with test(RDBValueError, "Unexpected size encoding 0x3"):
             list(unpack_intset(val))
-
 
     def test_zero_len(self):
         val = (b'\x02\x00\x00\x00'
