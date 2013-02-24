@@ -1,5 +1,6 @@
 from io import BytesIO
 
+from .exceptions import RDBValueError
 from .util import read_byte, read_uint, skip_bytes
 
 
@@ -17,7 +18,7 @@ def unpack_zipmap(bytes_):
         key = s.read(key_len)
         val_len = read_next_len(s)
         if val_len is None:
-            raise ValueError('Unexpected end of zipmap')
+            raise RDBValueError("Unexpected end of zipmap")
         free = read_byte(s)
         value = s.read(val_len)
         skip_bytes(s, free)

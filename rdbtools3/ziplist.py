@@ -1,5 +1,6 @@
 from io import BytesIO
 
+from .exceptions import RDBValueError
 from .util import read_uint, read_int, read_byte, unpack
 from .zipmap import read_next_len
 
@@ -25,13 +26,13 @@ def unpack_ziplist(bytes_):
         yield unpack_ziplist_entry(s)
     zend = read_byte(s)
     if zend != 255:
-        raise ValueError("Invalid ziplist end {}".format(hex(zend)))
+        raise RDBValueError("Invalid ziplist end {}".format(hex(zend)))
 
 
 def unpack_ziplist_entry(s):
     prev_len = read_next_len(s)
     if prev_len is None:
-        raise ValueError("Unexpected end of ziplist")
+        raise RDBValueError("Unexpected end of ziplist")
     entry_type = read_byte(s)
     enc = entry_type >> 6
     if enc == STR_6BIT:

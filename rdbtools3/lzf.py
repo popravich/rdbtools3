@@ -1,4 +1,4 @@
-from io import BytesIO
+from .exceptions import RDBValueError
 from .util import read_byte
 
 
@@ -23,6 +23,6 @@ def unpack_lzf(f, clen, explen):
                 out.append(out[i])
             out_idx = len(out)
     if len(out) != explen:
-        raise ValueError('Invalid length {}, expected {}'
-                         .format(len(out), explen))
+        raise RDBValueError("Invalid length {}, expected {}"
+                            .format(len(out), explen))
     return out

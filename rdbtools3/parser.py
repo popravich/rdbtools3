@@ -2,7 +2,7 @@ import datetime
 from collections import namedtuple
 
 from . import consts as C
-from .exceptions import FileFormatError
+from .exceptions import FileFormatError, RDBValueError
 from .util import read_byte, read_int, skip_bytes, unpack, unpack_pairs
 from .intset import unpack_intset
 from .ziplist import unpack_ziplist
@@ -25,7 +25,7 @@ def parse_rdb_stream(f, skip_db=lambda dbnum: False,
     key = None
     value = None
 
-    _skip_db = _skip_key_type = _skip_key = False
+    _skip_db = False
 
     # read signature and version
     read_signature(f)
@@ -51,13 +51,13 @@ def parse_rdb_stream(f, skip_db=lambda dbnum: False,
             break
 
         if dbnum is None:
-            raise FileFormatError('Select DB code expected but none found')
+            raise FileFormatError("Select DB code expected but none found")
 
         expire, ctl_code = read_expire(ctl_code, f)
 
         if ctl_code not in C.VALUE_ENC_TYPES:
-            raise NotImplementedError("Got unknown data type {}"
-                                      .format(hex(ctl_code)))
+            raise RDBValueError("Got unknown data type {}"
+                                .format(hex(ctl_code)))
         key_type = C.TYPE_NAMES[ctl_code]
 
         if _skip_db or skip_key_type(dbnum, key_type):
@@ -79,7 +79,7 @@ def parse_rdb_stream(f, skip_db=lambda dbnum: False,
 def read_signature(f):
     bsign = f.read(5)
     if bsign != C.MAGIC_STRING:
-        raise FileFormatError('Invalid file format')
+        raise FileFormatError("Invalid file format")
 
 
 def read_version(f):
@@ -87,9 +87,9 @@ def read_version(f):
     try:
         version = int(bversion)
     except ValueError:
-        raise FileFormatError('Invalid RDB version number')
+        raise FileFormatError("Invalid RDB version number")
     if version < 1:
-        raise FileFormatError('Invalid RDB version number')
+        raise FileFormatError("Invalid RDB version number")
     return version
 
 
@@ -122,8 +122,8 @@ def read_string(f):
     elif str_enc_type == C.STR_COMPRESSED:
         clen, explen = len_
         return unpack_lzf(f, clen, explen)
-    raise NotImplementedError('Got unknown string encoding type {}'
-                              .format(hex(str_enc_type)))
+    raise RDBValueError("Got unknown string encoding type {}"
+                        .format(hex(str_enc_type)))
 
 
 def read_skip_string(f):
@@ -166,7 +166,7 @@ def read_value(ctl_code, f):
         return list(unpack_pairs(unpack_ziplist(read_string(f))))
     elif ctl_code == C.VALUE_ENC_HASH_IN_ZIPLIST:
         return list(unpack_pairs(unpack_ziplist(read_string(f))))
-    raise NotImplementedError("Got unknown data type {}".format(hex(ctl_code)))
+    raise RDBValueError("Got unknown data type {}".format(hex(ctl_code)))
 
 
 def read_skip_value(ctl_code, f):
@@ -217,8 +217,8 @@ def read_length(f):
         return unpack('H', f.read(2))
     elif val == C.LEN_ENC_SPECIAL_32BIT:
         return unpack('I', f.read(4))
-    raise NotImplementedError('Got unknown length encoding type {}'
-                              .format(hex(byte)))
+    raise RDBValueError("Got unknown length encoding type {}"
+                        .format(hex(byte)))
 
 
 def read_string_length(f):
@@ -254,8 +254,8 @@ def read_string_length(f):
         clen = read_length(f)
         explen = read_length(f)
         return C.STR_COMPRESSED, (clen, explen)
-    raise NotImplementedError('Got unknown length encoding type {}'
-                              .format(hex(byte)))
+    raise RDBValueError("Got unknown length encoding type {}"
+                        .format(hex(byte)))
 
 
 def unpack_list(f):
