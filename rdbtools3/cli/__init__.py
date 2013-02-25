@@ -11,6 +11,11 @@ from rdbtools3.consts import TYPE_NAMES
 TYPES = sorted(set(TYPE_NAMES.values()))
 
 
+PRINT_HEADLINE = '{db:>3} | {type:>6} | {key:<30} | {info_encoding:<10}'
+PRINT_LINE_FMT = ('{i.dbnum:>3} | {i.key_type:>6} |'
+                  ' {i.key:<30} | {i.info[encoding]:<10}')
+
+
 def get_options():
     ap = argparse.ArgumentParser(
             prog='python3 -m rdbtools3.cli',
@@ -54,10 +59,16 @@ def get_options():
             help="Show dump info and exit",
             dest="show_info_only", default=False, action="store_true")
 
-    ap.add_argument('--format', metavar="STRING",
-            help="Use alternative line format when printing keys;"
-                 " (default `%(default)s`)",
-            dest="line_format", default=None)
+    gr = ap.add_argument_group('Miscalleneous options')
+    gr.add_argument('--format', metavar="STRING",
+            help="Use alternative line format when printing keys",
+            dest="line_fmt", default=PRINT_LINE_FMT)
+    gr.add_argument('--header-format', metavar="STRING",
+            help="Use alternative header line format",
+            dest="headline", default=PRINT_HEADLINE)
+    gr.add_argument('--key-encoding', metavar="ENC",
+            help="set encoding that should be used to decode keys",
+            dest="encoding", default='utf-8')
     return ap
 
 
@@ -87,12 +98,15 @@ def print_info(options):
                                     skip_key_type=skip_key_type):
         pass
 
-    headline = 'db: {{:>{0}}}; keys: {{}}\n'.format(len(str(max(dbs))))
+    headline = '{:>3} | {:>6} | '.format('db', 'keys')
+    headline += ' | '.join('{:>6}'.format(t) for t in TYPES)
+    sys.stdout.write(headline)
+    sys.stdout.write('\n' + ('-' * len(headline)) + '\n')
     for db, keys in sorted(dbs.items()):
-        total = sum(keys.values())
-        sys.stdout.write(headline.format(db, total))
-        for key, count in sorted(keys.items()):
-            sys.stdout.write('  {:<10}: {}\n'.format(key, count))
+        sys.stdout.write('{:>3} | {:>6} | '.format(db, sum(keys.values())))
+        sys.stdout.write(' | '.join('{:>6}'.format(keys.get(t, ''))
+                                    for t in TYPES))
+        sys.stdout.write('\n')
 
 
 def skip_db(options):
@@ -143,16 +157,18 @@ def skip_key(options):
 
 
 def print_keys(options):
-    fmt = 'db: {item.dbnum}; type: {item.key_type}; key: {item.key}'
-    if options.line_format:
-        fmt = options.line_format
     parser = parse_rdb_stream(options.dumpfile,
                               skip_db=skip_db(options),
                               skip_key_type=skip_key_type(options),
                               skip_key=skip_key(options),
                               )
+    sys.stdout.write(options.headline.format(db='db', type='type', key='key',
+                     info_encoding='encoding', expire='expire'))
+    sys.stdout.write('\n')
     for item in parser:
-        sys.stdout.write(fmt.format(item=item))
+        if isinstance(item.key, bytes):
+            item = item._replace(key=item.key.decode(options.encoding))
+        sys.stdout.write(options.line_fmt.format(i=item))
         sys.stdout.write('\n')
 
 
