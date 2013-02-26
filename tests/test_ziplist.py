@@ -5,40 +5,36 @@ from rdbtools3.ziplist import unpack_ziplist, unpack_ziplist_entry
 from rdbtools3.exceptions import RDBValueError
 
 
-class TestZiplistEntry(unittest.TestCase):
+class TestZiplist(unittest.TestCase):
 
-    def test_bad_prev_length(self):
-        data = b'\xFFabc'
+    def test_empty(self):
+        data = b'\x00' * 4
+        data += b'\x00' * 4
+        data += b'\x00' * 2
+        data += b'\xFF'
+        ret = list(unpack_ziplist(data))
+        self.assertEqual([], ret)
+
+    def test_bad_end(self):
+        data = b'\x00' * 4
+        data += b'\x00' * 4
+        data += b'\x00' * 2
+        with self.assertRaises(TypeError):
+            list(unpack_ziplist(data))
+
+        data += b'\xFE'
         with self.assertRaises(RDBValueError):
-            unpack_ziplist_entry(BytesIO(data))
+            list(unpack_ziplist(data))
 
-    def test_str_6bit(self):
-        data1 = b'\x00'
-        data1 += b'\x01'
-        data1 += b'A'
-        ret = unpack_ziplist_entry(BytesIO(data1))
-        self.assertEqual(b'A', ret)
-
-        data2 = b'\x00'
-        data2 += b'\x3F'
-        data2 += b'a' * 63
-        ret = unpack_ziplist_entry(BytesIO(data2))
-        self.assertEqual(b'a' * 63, ret)
-
-    def test_str_14bit(self):
-        data1 = b'\x00'
-        data1 += b'\x40\x01'
-        data1 += b'A'
-        ret = unpack_ziplist_entry(BytesIO(data1))
-        self.assertEqual(b'A', ret)
-
-        data2 = b'\x00'
-        data2 += b'\x60\x00'
-        data2 += b'a' * (2 ** 13)
-        ret = unpack_ziplist_entry(BytesIO(data2))
-        self.assertEqual(b'a' * (2 ** 13), ret)
-        self.assertEqual(8192, len(ret))
-
+    def test_simple(self):
+        data = b'\x00' * 4
+        data += b'\x00' * 4
+        data += b'\x02\x00'
+        data += b'\x00\x03key'
+        data += b'\x00\xF2'
+        data += b'\xFF'
+        ret = list(unpack_ziplist(data))
+        self.assertEqual([b'key', 1], ret)
 
 if __name__ == "__main__":
     unittest.main()
