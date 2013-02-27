@@ -57,7 +57,16 @@ class TestZipmap(unittest.TestCase):
             list(unpack_zipmap(data))
 
     def testUnpack_empty(self):
+        data = b'\x00\xFFspam'
+        ret = list(unpack_zipmap(data))
+        self.assertEqual([], ret)
+
         data = b'\x01\xFFspam'
+        with self.assertRaises(RDBValueError):
+            list(unpack_zipmap(data))
+
+    def testUnpack_no_entries_count(self):
+        data = b'\xFF\xFF'
         ret = list(unpack_zipmap(data))
         self.assertEqual([], ret)
 

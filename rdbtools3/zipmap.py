@@ -23,10 +23,10 @@ def unpack_zipmap(bytes_):
         value = s.read(val_len)
         skip_bytes(s, free)
         yield key, value
-    # TODO: maybe just skip this check?
-    #if num_entries is not None and num_entries != len(ret):
-    #    raise ValueError("Invalid number of entries in zipmap")
-    #return ret
+        if num_entries is not None:
+            num_entries -= 1
+    if num_entries is not None and num_entries != 0:
+        raise RDBValueError("Invalid number of entries in zipmap")
 
 
 def read_next_len(s):
