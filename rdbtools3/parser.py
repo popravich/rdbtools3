@@ -17,7 +17,7 @@ def parse_rdb_stream(f, skip_db=lambda dbnum: False,
                         skip_key_type=lambda dbnum, key_type: False,
                         skip_key=lambda dbnum, key_type, key: False):
     """
-    Parses RDB file
+    Parses RDB file stream
     """
     dbnum = None
     _skip_db = False
@@ -267,7 +267,8 @@ def unpack_zset(f):
         val = read_string(f)
         len_ = read_byte(f)
         score = f.read(len_)
-        # TODO: convert score to int/float
+        # let the user handle score convertion (to float/int/Decimal/whatever)
+        #   will implement some conversion in cli tool
         yield val, score
 
 
