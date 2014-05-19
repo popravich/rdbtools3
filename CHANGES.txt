@@ -1,0 +1,9 @@
+CHANGES
+-------
+
+0.2.0 (XXXX-XX-XX)
+^^^^^^^^^^^^^^^^^^
+
+* Add Makefile
+
+* Add CHANGES.txt
