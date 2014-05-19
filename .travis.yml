@@ -12,4 +12,4 @@ install:
 script:
 - pyflakes rdbtools3 tests
 - pep8 rdbtools3 tests
-- nosetests
+- nosetests -v
