@@ -1,11 +1,13 @@
 CHANGES
 -------
 
-0.2.0 (XXXX-XX-XX)
+0.1.2 (XXXX-XX-XX)
 ^^^^^^^^^^^^^^^^^^
 
 * Add Makefile
 
 * Add CHANGES.txt
+
+* Add setup.py
 
 * pep8 and pyflakes3 cleanup

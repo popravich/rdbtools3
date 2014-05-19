@@ -1,0 +1,6 @@
+include LICENSE
+include README.md
+include CHANGES.txt
+include setup.py
+graft rdbtools3
+global-exclude *.pyc *.swp
