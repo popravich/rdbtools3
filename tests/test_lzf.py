@@ -6,7 +6,7 @@ from rdbtools3.exceptions import RDBValueError
 
 
 class TestLZF(unittest.TestCase):
-    
+
     def test_simple(self):
         data = BytesIO(b'\x04ABCDE')
 
@@ -20,15 +20,15 @@ class TestLZF(unittest.TestCase):
 
     def test_bad_lenghts(self):
         with self.assertRaises(RDBValueError):
-            ret = unpack_lzf(BytesIO(b'\x00'), 1, 1)
+            unpack_lzf(BytesIO(b'\x00'), 1, 1)
         with self.assertRaises(RDBValueError):
-            ret = unpack_lzf(BytesIO(b'\x00'), 0, 1)
+            unpack_lzf(BytesIO(b'\x00'), 0, 1)
         with self.assertRaises(ValueError):
             unpack_lzf(BytesIO(b'\x01'), 1, 1)
 
     def test_simple_backref(self):
-        data = (b'\x01AB'    # simple
-                b'\x60\x01') # backref: len 3+2; back 2-1-1
+        data = (b'\x01AB'       # simple
+                b'\x60\x01')    # backref: len 3+2; back 2-1-1
         ret = unpack_lzf(BytesIO(data), 5, 7)
         self.assertEqual(b'ABABABA', ret)
 

@@ -28,7 +28,7 @@ class TestSimple(unittest.TestCase):
         items = list(map(tuple, self.test_parse()))
 
         expected = [
-        #    db, type, name, value, expire, extra info
+            # db, type, name, value, expire, extra info
             (1, 'string', b'str2', mock.ANY, None, mock.ANY),
             (1, 'hash', b'hset1', mock.ANY, None, mock.ANY),
             (1, 'set', b'set1', mock.ANY, None, mock.ANY),

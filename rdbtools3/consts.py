@@ -8,7 +8,7 @@ EXPIRE_SEC = 253    # FD -- expire timestamp in seconds
 EXPIRE_MSEC = 252   # FC -- expire timestamp in milliseconds
 
 
-### Length encodings ###
+# Length encodings #
 LEN_ENC_6BIT = 0
 LEN_ENC_14BIT = 1
 LEN_ENC_32BIT = 2
@@ -22,7 +22,7 @@ STR_INTEGER = 2
 STR_COMPRESSED = 3
 
 
-### Value Type encodings ###
+# Value Type encodings #
 VALUE_ENC_STRING = 0
 VALUE_ENC_LIST = 1
 VALUE_ENC_SET = 2
@@ -48,7 +48,7 @@ VALUE_ENC_TYPES = set((
     VALUE_ENC_HASH_IN_ZIPLIST,
 ))
 
-### Value types to readable names mapping ###
+# Value types to readable names mapping #
 TYPE_NAMES = {
     VALUE_ENC_STRING: 'string',
     VALUE_ENC_LIST: 'list',

@@ -1,7 +1,7 @@
 import unittest
 from io import BytesIO
 
-from rdbtools3.ziplist import unpack_ziplist, unpack_ziplist_entry
+from rdbtools3.ziplist import unpack_ziplist_entry
 from rdbtools3.exceptions import RDBValueError
 
 

@@ -7,3 +7,5 @@ CHANGES
 * Add Makefile
 
 * Add CHANGES.txt
+
+* pep8 and pyflakes3 cleanup

@@ -19,8 +19,9 @@ UINT_4BIT = 15
 
 def unpack_ziplist(bytes_):
     s = BytesIO(bytes_)
-    zlsize = read_uint(s, 4)        # not used when unpacking
-    tail_offset = read_uint(s, 4)   # not used when unpacking
+    read_uint(s, 8)     # zlist size and tail offset; not used when unpacking
+    # zlsize = read_uint(s, 4)
+    # tail_offset = read_uint(s, 4)
     num_entries = read_uint(s, 2)
     for _ in range(num_entries):
         yield unpack_ziplist_entry(s)
@@ -30,7 +31,7 @@ def unpack_ziplist(bytes_):
 
 
 def unpack_ziplist_entry(s):
-    prev_len = read_next_len(s) # used for next check only
+    prev_len = read_next_len(s)     # used for next check only
     if prev_len is None:
         raise RDBValueError("Unexpected end of ziplist")
     entry_type = read_byte(s)

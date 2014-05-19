@@ -14,8 +14,8 @@ RDBItem = namedtuple('RDBItem', 'dbnum key_type key value expire info')
 
 
 def parse_rdb_stream(f, skip_db=lambda dbnum: False,
-                        skip_key_type=lambda dbnum, key_type: False,
-                        skip_key=lambda dbnum, key_type, key: False):
+                     skip_key_type=lambda dbnum, key_type: False,
+                     skip_key=lambda dbnum, key_type, key: False):
     """
     Parses RDB file stream
     """
