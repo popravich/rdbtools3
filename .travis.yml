@@ -5,4 +5,11 @@ python:
 - "3.3"
 - "3.4"
 
-script: make flake test
+install:
+- pip install pyflakes
+- pip install pep8
+
+script:
+- pyflakes rdbtools3 tests
+- pep8 rdbtools3 tests
+- nosetests
