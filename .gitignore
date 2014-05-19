@@ -1,0 +1,7 @@
+*.sw[po]
+
+__pycache__
+*.py[co]
+
+.coverage
+htmlcov/
