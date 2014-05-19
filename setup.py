@@ -44,7 +44,7 @@ setup(name='rdbtools3',
       version=read_version(),
       description=("Redis dump.rdb parser library and cli tool"
                    " implemented with Python 3."),
-      long_description='\n\n'.join((read('README.md'), read('CHANGES.txt'))),
+      long_description='\n\n'.join((read('README.rst'), read('CHANGES.txt'))),
       classifiers=classifiers,
       platforms=["POSIX"],
       author="Alexey Popravka",
