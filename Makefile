@@ -18,4 +18,8 @@ test: rdbtools3 tests
 	$(NOSE) -v
 
 
+doc: docs/*
+	make -C docs html
+
+
 .PHONY: all flake
