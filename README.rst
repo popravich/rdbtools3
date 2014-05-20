@@ -5,8 +5,12 @@ Redis dump.rdb parser tool implemented in Python 3
    :target: https://travis-ci.org/popravich/rdbtools3
    :alt: Build status
 
-inspired by `redis-rdb-tools <https://github.com/sripathikrishnan/redis-rdb-tools>`_
+Inspired by `redis-rdb-tools <https://github.com/sripathikrishnan/redis-rdb-tools>`_
 
+Documentation
+^^^^^^^^^^^^^
+
+See http://rdbtools3.readthedocs.org/
 
 Usage example
 ^^^^^^^^^^^^^
