@@ -1,6 +1,6 @@
 PYFLAKES ?= pyflakes3
 PEP8 ?= pep8
-NOSE ?= nosetests
+NOSE ?= nosetests3
 
 all: flake cov
 
