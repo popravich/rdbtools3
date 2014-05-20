@@ -10,14 +10,21 @@ from .zipmap import unpack_zipmap
 from .lzf import unpack_lzf
 
 
+__all__ = [
+    'parse_rdb_stream',
+    'RDBItem',
+    ]
+
+
 RDBItem = namedtuple('RDBItem', 'dbnum key_type key value expire info')
 
 
 def parse_rdb_stream(f, skip_db=lambda dbnum: False,
                      skip_key_type=lambda dbnum, key_type: False,
                      skip_key=lambda dbnum, key_type, key: False):
-    """
-    Parses RDB file stream
+    """Parses RDB file stream.
+
+    Returns generator that parses input byte stream and yields db items.
     """
     dbnum = None
     _skip_db = False
