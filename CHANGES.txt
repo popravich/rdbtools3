@@ -1,7 +1,7 @@
 CHANGES
 -------
 
-0.1.2 (XXXX-XX-XX)
+0.1.2 (2014-05-21)
 ^^^^^^^^^^^^^^^^^^
 
 * Add Makefile
@@ -11,3 +11,5 @@ CHANGES
 * Add setup.py
 
 * pep8 and pyflakes3 cleanup
+
+* documentation started
