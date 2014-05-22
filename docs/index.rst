@@ -31,7 +31,7 @@ commands::
    # optionally, run tests with
    make test
 
-Fill free to `fork`_ it and/or to report any found issues/ideas on `bug tracker`_
+Feel free to `fork`_ it and/or to report any found issues/ideas on `bug tracker`_
 
 .. _GitHub: https://github.com/popravich/rdbtools3
 .. _fork: GitHub_

@@ -22,5 +22,7 @@ test: rdbtools3 tests
 doc: docs/*
 	make -C docs html
 
+clean:
+	git clean -dxf
 
 .PHONY: all flake
