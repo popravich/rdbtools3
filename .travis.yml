@@ -1,9 +1,16 @@
+sudo: false
 language: python
 python:
 - "2.7"
 - "3.2"
 - "3.3"
 - "3.4"
+
+cache:
+  directories:
+  - $HOME/.cache/pip
+before_cache:
+  - rm -f $HOME/.cache/pip/log/debug.log
 
 install:
 - pip install pyflakes
